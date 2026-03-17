@@ -12,13 +12,13 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-    - uses: actions/checkout@v3
+    - uses: actions/checkout@v6
 
     - name: Setup SourcePawn Compiler
       id: setup
-      uses: rumblefrog/setup-sp@v1.1.0
+      uses: rumblefrog/setup-sp@v1.2.4
       with:
-        version: "1.11.x"
+        version: "1.12.x"
 
     - name: Create plugins directory
       run: mkdir addons/sourcemod/plugins
@@ -35,7 +35,7 @@ jobs:
         mv addons artifact
 
     - name: Upload compiled plugin
-      uses: actions/upload-artifact@v3
+      uses: actions/upload-artifact@v7
       with:
         name: movementhud-git-${{ github.sha }}.zip
         path: artifact

@@ -10,7 +10,7 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-    - uses: actions/checkout@v3
+    - uses: actions/checkout@v6
 
     - name: Setup variables
       id: vars
@@ -18,9 +18,9 @@ jobs:
 
     - name: Setup SourcePawn Compiler
       id: setup
-      uses: rumblefrog/setup-sp@v1.1.0
+      uses: rumblefrog/setup-sp@v1.2.4
       with:
-        version: "1.10.x"
+        version: "1.12.x"
 
     - name: Create plugins directory
       run: mkdir addons/sourcemod/plugins
@@ -36,6 +36,6 @@ jobs:
         zip -r "build/movementhud-${{ steps.vars.outputs.version }}.zip" addons
 
     - name: Release
-      uses: softprops/action-gh-release@v1
+      uses: softprops/action-gh-release@v2
       with:
         files: "build/movementhud-${{ steps.vars.outputs.version }}.zip"
