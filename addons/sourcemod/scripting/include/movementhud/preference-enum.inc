@@ -20,7 +20,9 @@ methodmap MHudEnumPreference < MHudPreference
             char szKey[64];
             Format(szKey, sizeof(szKey), "values[%d]", i);
 
-            preference.WithMetadata(szKey, values[i]);
+            char szValue[MHUD_MAX_VALUE];
+            strcopy(szValue, sizeof(szValue), values[i]);
+            preference.WithMetadata(szKey, szValue);
         }
 
         return view_as<MHudEnumPreference>(
