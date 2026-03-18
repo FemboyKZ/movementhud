@@ -1,5 +1,3 @@
-static Handle HudSync;
-
 MHudBoolPreference DistPredMode;
 MHudXYPreference DistPredPosition;
 MHudRGBPreference DistPredColor;
@@ -14,7 +12,6 @@ void OnPluginStart_Elements_Mode_DistPred()
 
 void OnPluginStart_Elements_Other_DistPred()
 {
-    HudSync = CreateHudSynchronizer();
     DistPredColor = new MHudRGBPreference("distpred_color", "Distance Prediction - Color", 255, 80, 0);
 }
 
@@ -59,5 +56,5 @@ void OnGameFrame_Element_DistPred(int client, int target)
     DistPredPosition.GetXY(client, xy);
 
     SetHudTextParams(xy[0], xy[1], GetTextHoldTimeMHUD(client), rgb[0], rgb[1], rgb[2], 255, _, _, 0.0, 0.0);
-    ShowSyncHudText(client, HudSync, "%.1f", totalDistance);
+    ShowSyncHudText(client, g_IndicatorsHudSync, "%.1f", totalDistance);
 }

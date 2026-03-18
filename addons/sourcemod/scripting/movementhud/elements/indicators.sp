@@ -1,4 +1,4 @@
-static Handle HudSync;
+Handle g_IndicatorsHudSync;
 
 MHudBoolPreference IndicatorsMode;
 MHudRGBPreference IndicatorsColor;
@@ -20,7 +20,7 @@ void OnPluginStart_Elements_Mode_Indicators()
 
 void OnPluginStart_Elements_Other_Indicators()
 {
-    HudSync = CreateHudSynchronizer();
+    g_IndicatorsHudSync = CreateHudSynchronizer();
 
     IndicatorsColor = new MHudRGBPreference("indicators_color", "Indicators - Color", 0, 255, 0);
     IndicatorsJBEnabled = new MHudBoolPreference("indicators_jb_enabled", "Indicators - Jump Bug", false);
@@ -87,5 +87,5 @@ void OnGameFrame_Element_Indicators(int client, int target)
             useAbbr ? "G" : "FIRST TICK GAIN"
         );
     }
-    ShowSyncHudText(client, HudSync, "%s", buffer);
+    ShowSyncHudText(client, g_IndicatorsHudSync, "%s", buffer);
 }
