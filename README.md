@@ -2,14 +2,16 @@
 
 A versatile SourceMod plugin providing customizable displays for player movement.
 
+FKZ fork of LoB fork.
+
 ## **Installation**
 
-1. Download the [latest release](https://github.com/Sikarii/movementhud/releases)
+1. Download the [latest release](https://github.com/FemboyKZ/movementhud/releases)
 2. Extract all the files into `csgo`
 
 > :warning: **If you are using KZTimer**: This doesn't work.
 
-## **Differences**
+## **Differences** - LoB
 
 - Is now fully integrated into GOKZ, no tracking module required.
 - MHUD options in `!options` removed, however still available with !mhud as usual.
@@ -19,3 +21,7 @@ A versatile SourceMod plugin providing customizable displays for player movement
 - Better GOKZ replay bot integration
 - Add more color by speed options
 - Slightly increase display quality.
+
+## **Differences** - FKZ
+
+- Distance prediction for LJs based on [7yPh00N's plugin](https://github.com/7yPh00N/Distance_Prediction_Plugin)

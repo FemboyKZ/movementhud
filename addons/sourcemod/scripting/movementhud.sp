@@ -29,6 +29,7 @@ bool gB_GOKZReplays;
 #include "movementhud/elements/keys.sp"
 #include "movementhud/elements/speed.sp"
 #include "movementhud/elements/indicators.sp"
+#include "movementhud/elements/distpred.sp"
 
 #include "movementhud/preferences.sp"
 #include "movementhud/preferences_code.sp"
@@ -127,5 +128,6 @@ public void OnGameFrame()
 		OnGameFrame_Element_Keys(client, target);
 		OnGameFrame_Element_Speed(client, target);
 		OnGameFrame_Element_Indicators(client, target);
+		OnGameFrame_Element_DistPred(client, target);
 	}
 }

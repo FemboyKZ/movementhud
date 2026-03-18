@@ -14,6 +14,9 @@ float gF_OldSpeed[MAXPLAYERS + 1];
 float gF_CurrentSpeed[MAXPLAYERS + 1];
 float gF_LastJumpInput[MAXPLAYERS + 1];
 
+float gF_JumpStartOrigin[MAXPLAYERS + 1][3];
+float gF_JumpStartTime[MAXPLAYERS + 1];
+
 static bool OldOnGround[MAXPLAYERS + 1];
 static MoveType OldMoveType[MAXPLAYERS + 1];
 
@@ -42,6 +45,9 @@ void OnClientPutInServer_Movement(int client)
 
     gF_CurrentSpeed[client] = 0.0;
     gF_LastJumpInput[client] = 0.0;
+
+    gF_JumpStartTime[client] = 0.0;
+    gF_JumpStartOrigin[client] = view_as<float>({0.0, 0.0, 0.0});
 
     OldOnGround[client] = false;
     OldMoveType[client] = MOVETYPE_NONE;
@@ -186,6 +192,9 @@ static void DoTakeoff(int client, bool didJump)
     gB_DidPerf[client] = didPerf;
     gB_DidTakeoff[client] = gB_GotBotInfo[client] ? gH_BotInfo[client].IsTakeoff : true;
     gF_TakeoffSpeed[client] = takeoffSpeed;
+
+    Movement_GetOrigin(client, gF_JumpStartOrigin[client]);
+    gF_JumpStartTime[client] = GetEngineTime();
 
     if (didJump)
     {
