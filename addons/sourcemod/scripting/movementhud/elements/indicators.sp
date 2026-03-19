@@ -24,7 +24,7 @@ void OnPluginStart_Elements_Mode_Indicators()
 
 void OnPluginStart_Elements_Other_Indicators()
 {
-    HudSync = CreateHudSynchronizer();
+    g_IndicatorsHudSync = CreateHudSynchronizer();
 
     IndicatorsColor = new MHudRGBPreference("indicators_color", "Indicators - Color", 0, 255, 0);
     IndicatorsJBColor = new MHudRGBPreference("indicators_jb_color", "Indicators - Jump Bug Color", 0, 255, 0);
@@ -65,10 +65,6 @@ void OnGameFrame_Element_Indicators(int client, int target)
     else if (drawPB)
     {
         IndicatorsPBColor.GetRGB(client, rgb);
-    }
-    else if (drawEB)
-    {
-        IndicatorsEBColor.GetRGB(client, rgb);
     }
     else
     {
