@@ -26,9 +26,6 @@ void OnPluginStart_Elements_Other_Indicators()
 {
     g_IndicatorsHudSync = CreateHudSynchronizer();
 
-    IndicatorsColor = new MHudRGBPreference("indicators_color", "Indicators - Color", 0, 255, 0);
-    IndicatorsJBColor = new MHudRGBPreference("indicators_jb_color", "Indicators - Jump Bug Color", 0, 255, 0);
-    IndicatorsPBColor = new MHudRGBPreference("indicators_pb_color", "Indicators - Perfect Bhop Color", 0, 255, 0);
     IndicatorsJBEnabled = new MHudBoolPreference("indicators_jb_enabled", "Indicators - Jump Bug", false);
     IndicatorsCJEnabled = new MHudBoolPreference("indicators_cj_enabled", "Indicators - Crouch Jump", false);
     IndicatorsPBEnabled = new MHudBoolPreference("indicators_pb_enabled", "Indicators - Perfect Bhop", false);
@@ -36,6 +33,9 @@ void OnPluginStart_Elements_Other_Indicators()
     IndicatorsFTGEnabled = new MHudBoolPreference("indicators_ftg", "Indicators - First Tick Gain", false);
     IndicatorsCrouchEnabled = new MHudBoolPreference("indicators_crouch", "Indicators - Crouch Status", false);
     IndicatorsAbbreviations = new MHudBoolPreference("indicators_abbrs", "Indicators - Abbreviations", true);
+    IndicatorsColor = new MHudRGBPreference("indicators_color", "Indicators - Color", 0, 255, 0);
+    IndicatorsJBColor = new MHudRGBPreference("indicators_jb_color", "Indicators - Jump Bug Color", 0, 255, 0);
+    IndicatorsPBColor = new MHudRGBPreference("indicators_pb_color", "Indicators - Perfect Bhop Color", 0, 255, 0);
 }
 
 void OnGameFrame_Element_Indicators(int client, int target)

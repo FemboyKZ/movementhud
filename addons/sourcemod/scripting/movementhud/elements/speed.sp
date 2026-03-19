@@ -50,11 +50,11 @@ void OnPluginStart_Elements_Other_Speed()
 {
     HudSync = CreateHudSynchronizer();
 
+    SpeedRounding = new MHudEnumPreference("speed_rounding", "Speed - Rounding", Roundings, sizeof(Roundings) - 1, Round_Down);
+    SpeedTakeoff = new MHudEnumPreference("speed_takeoff", "Speed - Show Takeoff", Takeoff, sizeof(Takeoff) - 1, Takeoff_Jump);
+    SpeedColorBySpeed = new MHudEnumPreference("speed_color_by_speed", "Speed - Color by Speed", SpeedColors, sizeof(SpeedColors) - 1, SpeedKeyColor_None);
     SpeedNormalColor = new MHudRGBPreference("speed_color_normal", "Speed - Normal Color", 255, 255, 255);
     SpeedPerfColor = new MHudRGBPreference("speed_color_perf", "Speed - Perfect Bhop Color", 0, 255, 0);
-    SpeedTakeoff = new MHudEnumPreference("speed_takeoff", "Speed - Show Takeoff", Takeoff, sizeof(Takeoff) - 1, Takeoff_Jump);
-    SpeedRounding = new MHudEnumPreference("speed_rounding", "Speed - Rounding", Roundings, sizeof(Roundings) - 1, Round_Down);
-    SpeedColorBySpeed = new MHudEnumPreference("speed_color_by_speed", "Speed - Color by Speed", SpeedColors, sizeof(SpeedColors) - 1, SpeedKeyColor_None);
     SpeedGainColor = new MHudRGBPreference("speed_color_gain", "Speed - Gain Color", 0, 255, 0);
     SpeedLossColor = new MHudRGBPreference("speed_color_loss", "Speed - Loss Color", 255, 0, 0);
     SpeedJBColor = new MHudRGBPreference("speed_color_jb", "Speed - Jump Bug Color", 0, 255, 0);

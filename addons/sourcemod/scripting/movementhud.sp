@@ -67,8 +67,7 @@ public void OnPluginStart()
 	OnPluginStart_Preferences();
 	OnPluginStart_PreferencesDefaults();
 
-	OnPluginStart_Elements_Mode();
-	OnPluginStart_Elements_Other();
+	OnPluginStart_Elements();
 
 	OnPluginStart_PreferencesCode();
 

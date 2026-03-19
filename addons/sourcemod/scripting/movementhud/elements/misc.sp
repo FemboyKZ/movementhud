@@ -12,19 +12,18 @@ static const char Speeds[UpdateSpeed_COUNT][] =
 };
 
 
-void OnPluginStart_Elements_Mode()
+void OnPluginStart_Elements()
 {
     OnPluginStart_Elements_Mode_Speed();
-    OnPluginStart_Elements_Mode_Keys();
-    OnPluginStart_Elements_Mode_Indicators();
-    OnPluginStart_Elements_Mode_DistPred();
-}
-
-void OnPluginStart_Elements_Other()
-{
     OnPluginStart_Elements_Other_Speed();
+
+    OnPluginStart_Elements_Mode_Keys();
     OnPluginStart_Elements_Other_Keys();
+
+    OnPluginStart_Elements_Mode_Indicators();
     OnPluginStart_Elements_Other_Indicators();
+
+    OnPluginStart_Elements_Mode_DistPred();
     OnPluginStart_Elements_Other_DistPred();
 
     UpdateSpeed = new MHudEnumPreference("update_speed", "Update Speed", Speeds, sizeof(Speeds) - 1, UpdateSpeed_Fastest);

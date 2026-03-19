@@ -50,12 +50,11 @@ void OnPluginStart_Elements_Other_Keys()
 {
     HudSync = CreateHudSynchronizer();
 
-    KeysNormalColor = new MHudRGBPreference("keys_color_normal", "Keys - Normal Color", 255, 255, 255);
-    KeysOverlapColor = new MHudRGBPreference("keys_color_overlap", "Keys - Overlap Color", 255, 0, 0);
+    KeysSpaceMode = new MHudEnumPreference("keys_spacing_mode", "Keys - Spacing Mode", SpacingModes, sizeof(SpacingModes) - 1, KeysSpaceMode_NativeHD);
     KeysMouseDirection = new MHudEnumPreference("keys_mouse_direction", "Keys - Mouse Direction", KeysStyle, sizeof(KeysStyle) - 1, KeyMouseStyle_Disabled);
     KeysColorBySpeed = new MHudEnumPreference("keys_color_by_speed", "Keys - Color by Speed", KeysColors, sizeof(KeysColors) - 1, SpeedKeyColor_None);
-    KeysSpaceMode = new MHudEnumPreference("keys_spacing_mode", "Keys - Spacing Mode", SpacingModes, sizeof(SpacingModes) - 1, KeysSpaceMode_NativeHD);
-
+    KeysNormalColor = new MHudRGBPreference("keys_color_normal", "Keys - Normal Color", 255, 255, 255);
+    KeysOverlapColor = new MHudRGBPreference("keys_color_overlap", "Keys - Overlap Color", 255, 0, 0);
     KeysGainColor = new MHudRGBPreference("keys_color_gain", "Keys - Gain Color", 0, 255, 0);
     KeysLossColor = new MHudRGBPreference("keys_color_loss", "Keys - Loss Color", 255, 0, 0);
 }
