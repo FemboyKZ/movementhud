@@ -7,3 +7,7 @@
 [submodule "sm-json"]
 	path = sm-json
 	url = https://github.com/clugg/sm-json
+[submodule "sourcemod"]
+	path = sourcemod
+	url = https://github.com/alliedmodders/sourcemod
+	branch = 1.12-dev

@@ -1,0 +1,1 @@
+../../../../sourcemod/plugins/include/sdktools_stocks.inc

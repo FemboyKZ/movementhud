@@ -1,0 +1,1 @@
+../../../../sourcemod/plugins/include/float.inc

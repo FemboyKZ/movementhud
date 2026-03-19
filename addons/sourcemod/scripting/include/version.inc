@@ -1,0 +1,1 @@
+../../../../sourcemod/plugins/include/version.inc

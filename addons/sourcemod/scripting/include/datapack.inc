@@ -1,0 +1,1 @@
+../../../../sourcemod/plugins/include/datapack.inc

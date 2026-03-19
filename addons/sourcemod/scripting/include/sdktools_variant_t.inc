@@ -1,0 +1,1 @@
+../../../../sourcemod/plugins/include/sdktools_variant_t.inc
