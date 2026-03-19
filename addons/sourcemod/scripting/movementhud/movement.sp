@@ -18,6 +18,7 @@ float gF_OldVerticalVelocity[MAXPLAYERS + 1];
 
 float gF_JumpStartOrigin[MAXPLAYERS + 1][3];
 float gF_JumpStartTime[MAXPLAYERS + 1];
+float gF_JumpAirTime[MAXPLAYERS + 1];
 
 static bool OldOnGround[MAXPLAYERS + 1];
 static MoveType OldMoveType[MAXPLAYERS + 1];
@@ -50,6 +51,7 @@ void OnClientPutInServer_Movement(int client)
     gF_LastJumpInput[client] = 0.0;
 
     gF_JumpStartTime[client] = 0.0;
+    gF_JumpAirTime[client] = 0.0;
     gF_JumpStartOrigin[client] = view_as<float>({0.0, 0.0, 0.0});
 
     OldOnGround[client] = false;
@@ -222,5 +224,66 @@ static void DoTakeoff(int client, bool didJump)
         gB_DidCrouchJump[client] = IsDucking(client);
     }
 
+    gF_JumpAirTime[client] = ComputeJumpAirTime(gB_DidCrouchJump[client]);
+
     gB_FirstTickGain[client] = gF_CurrentSpeed[client] > gF_OldSpeed[client];
+}
+
+static float ComputeJumpAirTime(bool isCrouchJump)
+{
+    // Simulate the full jump trajectory to determine total air time.
+    // Matches CS:GO's split-gravity model from the Source SDK:
+    //   1. StartGravity: velocity -= half_gravity
+    //   2. Position update: position += velocity * tick_interval
+    //   3. FinishGravity: velocity -= half_gravity
+    //
+    // CJ: CheckJumpButton SETs velocity to impulse (overwrites StartGravity)
+    //     Player crouches in air → origin rises 9u → must descend 9u extra to land
+    // Normal: CheckJumpButton ADDs impulse to post-StartGravity velocity
+    //     No crouch offset → lands at takeoff height
+    float tickInterval = GetTickInterval();
+    float gravity = FindConVar("sv_gravity").FloatValue;
+    float halfGravity = gravity * 0.5 * tickInterval;
+    float impulse = 301.993377; // sv_jump_impulse
+
+    float velocity;
+    if (isCrouchJump)
+    {
+        // CJ: vel = impulse (SET, overwrites StartGravity deduction)
+        velocity = impulse;
+    }
+    else
+    {
+        // Normal: vel = (0 - half_g + impulse) * 1.0 = impulse - half_g
+        velocity = impulse - halfGravity;
+    }
+
+    float position = 0.03125; // SURFACE_EPSILON
+
+    // Players always crouch in air in KZ, so origin is +9u above ground.
+    // Landing when crouched origin returns to ground level → must descend 9u extra.
+    float landingHeight = -9.0;
+    bool wasAbove = false;
+    int tickCount = 0;
+
+    while (tickCount < 1000)
+    {
+        velocity -= halfGravity;
+        position += velocity * tickInterval;
+        velocity -= halfGravity;
+
+        if (position > landingHeight + 2.0)
+        {
+            wasAbove = true;
+        }
+
+        tickCount++;
+
+        if (position <= landingHeight + 2.0 && wasAbove)
+        {
+            break;
+        }
+    }
+
+    return tickCount * tickInterval;
 }

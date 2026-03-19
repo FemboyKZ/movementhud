@@ -2,8 +2,6 @@ MHudBoolPreference DistPredMode;
 MHudXYPreference DistPredPosition;
 MHudRGBPreference DistPredColor;
 
-#define JUMP_AIRTIME 0.7812 // CS:GO CJ 128t
-
 void OnPluginStart_Elements_Mode_DistPred()
 {
     DistPredMode = new MHudBoolPreference("distpred_mode", "Distance Prediction - Mode", false);
@@ -29,7 +27,7 @@ void OnGameFrame_Element_DistPred(int client, int target)
     }
 
     float elapsed = GetEngineTime() - gF_JumpStartTime[target];
-    float remaining = JUMP_AIRTIME - elapsed;
+    float remaining = gF_JumpAirTime[target] - elapsed;
 
     if (remaining <= 0.0)
     {
