@@ -29,6 +29,7 @@ bool gB_GotBotInfo[MAXPLAYERS + 1];
 bool gB_FirstTickGain[MAXPLAYERS + 1];
 
 #define MAX_TRACKED_TICKS 16
+#define PREDICTION_EXTRA_AIRTIME 1
 float gF_SpeedChange[MAXPLAYERS + 1][MAX_TRACKED_TICKS];
 
 // =====[ LISTENERS ]=====
@@ -244,7 +245,7 @@ static float ComputeJumpAirTime(bool isCrouchJump)
     float tickInterval = GetTickInterval();
     float gravity = FindConVar("sv_gravity").FloatValue;
     float halfGravity = gravity * 0.5 * tickInterval;
-    float impulse = 301.993377; // sv_jump_impulse
+    float impulse = FindConVar("sv_jump_impulse").FloatValue; // 301.993377
 
     float velocity;
     if (isCrouchJump)
@@ -285,5 +286,5 @@ static float ComputeJumpAirTime(bool isCrouchJump)
         }
     }
 
-    return tickCount * tickInterval;
+    return (tickCount + PREDICTION_EXTRA_AIRTIME) * tickInterval;
 }
