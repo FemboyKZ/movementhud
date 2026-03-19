@@ -2,7 +2,7 @@
 
 A versatile SourceMod plugin providing customizable displays for player movement.
 
-FKZ fork of LoB fork.
+FKZ fork of LoB fork. Some changes taken from [AXE fork](https://github.com/cinyan10/movementhud).
 
 ## **Installation**
 
@@ -15,12 +15,18 @@ FKZ fork of LoB fork.
 
 - Is now fully integrated into GOKZ, no tracking module required.
 - MHUD options in `!options` removed, however still available with !mhud as usual.
-- Add first tick gain indicator (usually indicating W release and strafe key press at the same time)
-- Fix MHUD key display wiggling around, especially with mouse display on for 1080p/1440p resolutions
-- Fix MHUD display taking over GOKZ's display, hiding features like race announcements
-- Better GOKZ replay bot integration
-- Add more color by speed options
+- Add first tick gain indicator (usually indicating W release and strafe key press at the same time).
+- Fix MHUD key display wiggling around, especially with mouse display on for 1080p/1440p resolutions.
+- Fix MHUD display taking over GOKZ's display, hiding features like race announcements.
+- Better GOKZ replay bot integration.
+- Add more color by speed options.
 - Slightly increase display quality.
+
+## **Differences** - AXE
+
+- JB and PERF indicator colors.
+- EB and Crouched indicators.
+- Pref handling bugfix.
 
 ## **Differences** - FKZ
 
