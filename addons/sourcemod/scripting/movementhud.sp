@@ -46,8 +46,8 @@ bool gB_GOKZReplays;
 public Plugin myinfo =
 {
 	name = "MovementHUD",
-	author = "Sikari, zer0.k",
-	description = "Provides customizable displays for movement, LoB version",
+	author = "Sikari, zer0.k, cinyan10, jvnipers",
+	description = "Provides customizable displays for movement, FKZ version",
 	version = MHUD_VERSION,
 	url = MHUD_SOURCE_URL
 };
