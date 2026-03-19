@@ -12,6 +12,17 @@ void GetColorBySpeed(float speed, int rgb[3])
     rgb[2] = 0;
 }
 
+bool IsClientInFreeCamera(int client)
+{
+    if (GetClientTeam(client) != 1) // not spectating
+    {
+        return false;
+    }
+
+    int mode = GetEntProp(client, Prop_Send, "m_iObserverMode");
+    return mode == 6; // OBS_MODE_ROAMING
+}
+
 int GetSpectedOrSelf(int client)
 {
     int team = GetClientTeam(client);

@@ -31,6 +31,11 @@ void OnClientPutInServer_Preferences(int client)
     InvalidatePreferencesValueCache(client);
 }
 
+void OnClientCookiesCached_Preferences(int client)
+{
+    InvalidatePreferencesValueCache(client);
+}
+
 // =====[ PUBLIC ]=====
 
 int DisposePreferencesForPlugin(Handle plugin)

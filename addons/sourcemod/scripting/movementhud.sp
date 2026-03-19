@@ -107,6 +107,11 @@ public void OnClientPutInServer(int client)
 	OnClientPutInServer_PreferencesChatInput(client);
 }
 
+public void OnClientCookiesCached(int client)
+{
+	OnClientCookiesCached_Preferences(client);
+}
+
 public Action OnPlayerRunCmd(int client, int &buttons, int &impulse, float vel[3], float angles[3], int &weapon, int &subtype, int &cmdnum, int &tickcount, int &seed, int mouse[2])
 {
 	OnPlayerRunCmd_TrackMovement(client);

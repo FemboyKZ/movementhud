@@ -118,8 +118,14 @@ static void ResetWaitForPreferenceChatInputFromClient(int client, bool fromTimer
 	InputPreferenceId[client] = "";
 	InputMenuSelection[client] = 0;
 
-	if (!fromTimer)
+	Handle timer = InputTimer[client];
+	InputTimer[client] = null;
+
+	// Non-repeating timers are auto-closed by SourceMod after callback execution.
+	// Avoid manually deleting the handle when reset is called from the timer callback.
+	if (!fromTimer && timer != null)
 	{
 		delete InputTimer[client];
+		delete timer;
 	}
 }
