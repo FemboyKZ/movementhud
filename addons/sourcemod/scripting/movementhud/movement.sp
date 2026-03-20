@@ -28,6 +28,8 @@ bool gB_GotBotInfo[MAXPLAYERS + 1];
 
 bool gB_FirstTickGain[MAXPLAYERS + 1];
 
+float gF_JumpStamina[MAXPLAYERS + 1];
+
 #define MAX_TRACKED_TICKS 16
 #define PREDICTION_EXTRA_AIRTIME 1
 float gF_SpeedChange[MAXPLAYERS + 1][MAX_TRACKED_TICKS];
@@ -60,6 +62,7 @@ void OnClientPutInServer_Movement(int client)
 
     gB_GotBotInfo[client] = false;
     gB_DidEdgeBug[client] = false;
+    gF_JumpStamina[client] = 0.0;
 }
 
 void OnPlayerRunCmdPost_Movement(int client, int buttons, const int mouse[2], int tickcount)
@@ -99,6 +102,12 @@ bool JumpedRecently(int client)
 }
 
 // =====[ PRIVATE ]=====
+
+public Action Movement_OnJumpPre(int client, float origin[3], float velocity[3])
+{
+    gF_JumpStamina[client] = GetEntPropFloat(client, Prop_Send, "m_flStamina");
+    return Plugin_Continue;
+}
 
 public void Movement_OnPlayerJump(int client, bool jumpbug)
 {
@@ -225,12 +234,13 @@ static void DoTakeoff(int client, bool didJump)
         gB_DidCrouchJump[client] = IsDucking(client);
     }
 
-    gF_JumpAirTime[client] = ComputeJumpAirTime(gB_DidCrouchJump[client]);
+    float stamina = gB_GotBotInfo[client] ? 0.0 : gF_JumpStamina[client];
+    gF_JumpAirTime[client] = ComputeJumpAirTime(gB_DidCrouchJump[client], stamina);
 
     gB_FirstTickGain[client] = gF_CurrentSpeed[client] > gF_OldSpeed[client];
 }
 
-static float ComputeJumpAirTime(bool isCrouchJump)
+static float ComputeJumpAirTime(bool isCrouchJump, float stamina = 0.0)
 {
     // Simulate the full jump trajectory to determine total air time.
     // Matches CS:GO's split-gravity model from the Source SDK:
@@ -247,16 +257,23 @@ static float ComputeJumpAirTime(bool isCrouchJump)
     float halfGravity = gravity * 0.5 * tickInterval;
     float impulse = FindConVar("sv_jump_impulse").FloatValue; // 301.993377
 
+    // Stamina reduces jump velocity: modifier = clamp(1.0 - stamina / 100.0, 0.0, 1.0)
+    // In CS:GO SDK, CheckJumpButton multiplies velocity by this modifier after setting/adding impulse.
+    float staminaMod = 1.0 - stamina / 100.0;
+    if (staminaMod < 0.0) staminaMod = 0.0;
+    if (staminaMod > 1.0) staminaMod = 1.0;
+
     float velocity;
     if (isCrouchJump)
     {
-        // CJ: vel = impulse (SET, overwrites StartGravity deduction)
-        velocity = impulse;
+        // CJ: vel = impulse * staminaMod (SET, overwrites StartGravity deduction)
+        velocity = impulse * staminaMod;
     }
     else
     {
-        // Normal: vel = (0 - half_g + impulse) * 1.0 = impulse - half_g
-        velocity = impulse - halfGravity;
+        // Normal: vel = (0 - half_g + impulse) * staminaMod
+        // StartGravity already ran, then impulse is added, then stamina multiplies the whole thing.
+        velocity = (impulse - halfGravity) * staminaMod;
     }
 
     float position = 0.03125; // SURFACE_EPSILON
