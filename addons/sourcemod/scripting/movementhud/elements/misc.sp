@@ -12,6 +12,10 @@ static const char Speeds[UpdateSpeed_COUNT][] =
 };
 
 
+// CS:GO's HUD text system only supports 6 channels (MAX_NETMESSAGE in hl2sdk message.cpp).
+// Each CreateHudSynchronizer() claims a channel. Elements sharing a sync object will
+// overwrite each other since ShowSyncHudText reuses the same channel for the same object.
+// Current budget: Speed(1) + Keys(1) + Indicators(1) + DistPred(1) = 4/6 channels.
 void OnPluginStart_Elements()
 {
     OnPluginStart_Elements_Mode_Speed();
