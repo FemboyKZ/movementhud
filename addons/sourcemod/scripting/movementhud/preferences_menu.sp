@@ -27,6 +27,30 @@ static int GetPreferenceCategory(const char[] id)
     return Category_General;
 }
 
+static void GetCategoryName(int category, char[] buffer, int maxlength)
+{
+    switch (category)
+    {
+        case Category_Speed: strcopy(buffer, maxlength, "Speed Display");
+        case Category_Keys: strcopy(buffer, maxlength, "Key Display");
+        case Category_Indicators: strcopy(buffer, maxlength, "Indicators");
+        case Category_DistPred: strcopy(buffer, maxlength, "Distance Prediction");
+        case Category_General: strcopy(buffer, maxlength, "General");
+    }
+}
+
+static void GetCategoryPrefix(int category, char[] buffer, int maxlength)
+{
+    switch (category)
+    {
+        case Category_Speed: strcopy(buffer, maxlength, "Speed - ");
+        case Category_Keys: strcopy(buffer, maxlength, "Keys - ");
+        case Category_Indicators: strcopy(buffer, maxlength, "Indicators - ");
+        case Category_DistPred: strcopy(buffer, maxlength, "Distance Prediction - ");
+        default: buffer[0] = '\0';
+    }
+}
+
 void DisplayMainMenu(int client)
 {
     Menu menu = new Menu(MenuHandler_Main);
@@ -66,8 +90,15 @@ void DisplayPreferencesMenu(int client, bool advanced, bool fromMainMenu = false
 
     int category = gI_CategoryFilter[client];
 
+    char categoryName[32];
+    GetCategoryName(category, categoryName, sizeof(categoryName));
+
+    char categoryPrefix[32];
+    GetCategoryPrefix(category, categoryPrefix, sizeof(categoryPrefix));
+    int prefixLen = strlen(categoryPrefix);
+
     Menu menu = new Menu(MenuHandler_Preferences);
-    menu.SetTitle("MovementHUD %.20s\n%s\n ", MHUD_VERSION, MHUD_SOURCE_URL);
+    menu.SetTitle("MovementHUD %.20s\n%s\n%s\n ", MHUD_VERSION, MHUD_SOURCE_URL, categoryName);
 
     for (int i = 0; i < g_Preferences.Length; i++)
     {
@@ -81,13 +112,24 @@ void DisplayPreferencesMenu(int client, bool advanced, bool fromMainMenu = false
 
         char display[256];
 
+        // Strip category prefix from name for cleaner display
+        char name[64];
+        if (prefixLen > 0 && strncmp(preference.Name, categoryPrefix, prefixLen) == 0)
+        {
+            strcopy(name, sizeof(name), preference.Name[prefixLen]);
+        }
+        else
+        {
+            strcopy(name, sizeof(name), preference.Name);
+        }
+
         // Show raw values if in custom mode
         if (advanced)
         {
             char value[MHUD_MAX_VALUE];
             GetPreferenceValue(client, preference, value);
 
-            Format(display, sizeof(display), "%s: %s", preference.Name, value);
+            Format(display, sizeof(display), "%s: %s", name, value);
         }
         else
         {
@@ -97,7 +139,7 @@ void DisplayPreferencesMenu(int client, bool advanced, bool fromMainMenu = false
                 continue;
             }
 
-            Format(display, sizeof(display), "%s: %s", preference.Name, display);
+            Format(display, sizeof(display), "%s: %s", name, display);
         }
 
         bool isCorePreference = preference.OwningPlugin == GetMyHandle();
