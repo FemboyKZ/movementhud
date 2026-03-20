@@ -16,7 +16,7 @@ jobs:
 
     - name: Setup variables
       id: vars
-      run: echo ::set-output name=version::${GITHUB_REF#refs/*/}
+      run: echo "version=${GITHUB_REF#refs/*/}" >> $GITHUB_OUTPUT
 
     - name: Setup SourcePawn Compiler
       id: setup
