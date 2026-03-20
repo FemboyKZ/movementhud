@@ -1,10 +1,30 @@
+enum
+{
+    Category_Speed = 0,
+    Category_Keys,
+    Category_Indicators,
+    Category_DistPred,
+    Category_General
+};
+
 static bool gB_InAdvMode[MAXPLAYERS + 1];
 static bool gB_FromMainMenu[MAXPLAYERS + 1];
+static int gI_CategoryFilter[MAXPLAYERS + 1];
 
 void OnClientPutInServer_PreferencesMenu(int client)
 {
     gB_InAdvMode[client] = false;
     gB_FromMainMenu[client] = false;
+    gI_CategoryFilter[client] = Category_Speed;
+}
+
+static int GetPreferenceCategory(const char[] id)
+{
+    if (strncmp(id, "speed_", 6) == 0) return Category_Speed;
+    if (strncmp(id, "keys_", 5) == 0) return Category_Keys;
+    if (strncmp(id, "indicators_", 11) == 0) return Category_Indicators;
+    if (strncmp(id, "distpred_", 9) == 0) return Category_DistPred;
+    return Category_General;
 }
 
 void DisplayMainMenu(int client)
@@ -20,10 +40,31 @@ void DisplayMainMenu(int client)
     menu.Display(client, MENU_TIME_FOREVER);
 }
 
+void DisplayCategoryMenu(int client, bool advanced)
+{
+    gB_InAdvMode[client] = advanced;
+    gB_FromMainMenu[client] = true;
+
+    Menu menu = new Menu(MenuHandler_Category);
+    menu.SetTitle("MovementHUD %.20s\n%s\nSelect a category:\n ", MHUD_VERSION, MHUD_SOURCE_URL);
+
+    menu.AddItem("0", "Speed Display");
+    menu.AddItem("1", "Key Display");
+    menu.AddItem("2", "Indicators");
+    menu.AddItem("3", "Distance Prediction");
+    menu.AddItem("4", "General");
+
+    menu.ExitButton = true;
+    menu.ExitBackButton = true;
+    menu.Display(client, MENU_TIME_FOREVER);
+}
+
 void DisplayPreferencesMenu(int client, bool advanced, bool fromMainMenu = false, int displayAt = 0)
 {
     gB_InAdvMode[client] = advanced;
     gB_FromMainMenu[client] = fromMainMenu;
+
+    int category = gI_CategoryFilter[client];
 
     Menu menu = new Menu(MenuHandler_Preferences);
     menu.SetTitle("MovementHUD %.20s\n%s\n ", MHUD_VERSION, MHUD_SOURCE_URL);
@@ -32,6 +73,11 @@ void DisplayPreferencesMenu(int client, bool advanced, bool fromMainMenu = false
     {
         Preference preference;
         g_Preferences.GetArray(i, preference);
+
+        if (GetPreferenceCategory(preference.Id) != category)
+        {
+            continue;
+        }
 
         char display[256];
 
@@ -64,7 +110,7 @@ void DisplayPreferencesMenu(int client, bool advanced, bool fromMainMenu = false
     }
 
     menu.ExitButton = true;
-    menu.ExitBackButton = fromMainMenu;
+    menu.ExitBackButton = true;
     menu.DisplayAt(client, displayAt, MENU_TIME_FOREVER);
 }
 
@@ -81,7 +127,28 @@ public int MenuHandler_Main(Menu menu, MenuAction action, int param1, int param2
         menu.GetItem(param2, selection, sizeof(selection));
 
         bool advanced = selection[0] == '2';
-        DisplayPreferencesMenu(param1, advanced, true);
+        DisplayCategoryMenu(param1, advanced);
+    }
+    else if (action == MenuAction_End)
+    {
+        delete menu;
+    }
+    return 0;
+}
+
+public int MenuHandler_Category(Menu menu, MenuAction action, int param1, int param2)
+{
+    if (action == MenuAction_Select)
+    {
+        char selection[4];
+        menu.GetItem(param2, selection, sizeof(selection));
+
+        gI_CategoryFilter[param1] = StringToInt(selection);
+        DisplayPreferencesMenu(param1, gB_InAdvMode[param1], true);
+    }
+    else if (action == MenuAction_Cancel && param2 == MenuCancel_ExitBack)
+    {
+        DisplayMainMenu(param1);
     }
     else if (action == MenuAction_End)
     {
@@ -123,7 +190,7 @@ public int MenuHandler_Preferences(Menu menu, MenuAction action, int param1, int
     }
     else if (action == MenuAction_Cancel && param2 == MenuCancel_ExitBack)
     {
-        DisplayMainMenu(param1);
+        DisplayCategoryMenu(param1, gB_InAdvMode[param1]);
     }
     else if (action == MenuAction_End)
     {
