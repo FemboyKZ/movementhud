@@ -29,9 +29,12 @@ bool gB_GotBotInfo[MAXPLAYERS + 1];
 bool gB_FirstTickGain[MAXPLAYERS + 1];
 
 float gF_JumpStamina[MAXPLAYERS + 1];
+float gF_SimLandingHeight[MAXPLAYERS + 1];
 
 #define MAX_TRACKED_TICKS 16
 #define PREDICTION_EXTRA_AIRTIME 1
+#define SURFACE_EPSILON 0.03125
+#define HALF_SURFACE_EPSILON 0.015625
 float gF_SpeedChange[MAXPLAYERS + 1][MAX_TRACKED_TICKS];
 
 // =====[ LISTENERS ]=====
@@ -63,6 +66,7 @@ void OnClientPutInServer_Movement(int client)
     gB_GotBotInfo[client] = false;
     gB_DidEdgeBug[client] = false;
     gF_JumpStamina[client] = 0.0;
+    gF_SimLandingHeight[client] = SURFACE_EPSILON;
 }
 
 void OnPlayerRunCmdPost_Movement(int client, int buttons, const int mouse[2], int tickcount)
@@ -235,12 +239,24 @@ static void DoTakeoff(int client, bool didJump)
     }
 
     float stamina = gB_GotBotInfo[client] ? 0.0 : gF_JumpStamina[client];
-    gF_JumpAirTime[client] = ComputeJumpAirTime(gB_DidCrouchJump[client], stamina);
+
+    // For perfect bhops, start from the landing height of the previous jump
+    // instead of SURFACE_EPSILON, since the player lands somewhere in the 0-2u
+    // window above ground and doesn't settle to SURFACE_EPSILON on a perf.
+    float startHeight = SURFACE_EPSILON;
+    if (didPerf && didJump)
+    {
+        startHeight = gF_SimLandingHeight[client];
+    }
+
+    float landingHeight;
+    gF_JumpAirTime[client] = ComputeJumpAirTime(gB_DidCrouchJump[client], stamina, startHeight, landingHeight);
+    gF_SimLandingHeight[client] = landingHeight;
 
     gB_FirstTickGain[client] = gF_CurrentSpeed[client] > gF_OldSpeed[client];
 }
 
-static float ComputeJumpAirTime(bool isCrouchJump, float stamina = 0.0)
+static float ComputeJumpAirTime(bool isCrouchJump, float stamina, float startHeight, float &landingHeightOut)
 {
     // Simulate the full jump trajectory to determine total air time.
     // Matches CS:GO's split-gravity model from the Source SDK:
@@ -276,11 +292,14 @@ static float ComputeJumpAirTime(bool isCrouchJump, float stamina = 0.0)
         velocity = (impulse - halfGravity) * staminaMod;
     }
 
-    float position = 0.03125; // SURFACE_EPSILON
+    // startHeight accounts for bhop landing offset: on a perfect bhop, the player
+    // starts from wherever they landed in the 0-2u window above ground, not always
+    // at SURFACE_EPSILON. This affects total air time by up to ~1 tick.
+    float position = startHeight;
 
     // Players always crouch in air in KZ, so origin is +9u above ground.
     // Landing when crouched origin returns to ground level → must descend 9u extra.
-    float landingHeight = -9.0;
+    float landingThreshold = -9.0;
     bool wasAbove = false;
     int tickCount = 0;
 
@@ -290,17 +309,32 @@ static float ComputeJumpAirTime(bool isCrouchJump, float stamina = 0.0)
         position += velocity * tickInterval;
         velocity -= halfGravity;
 
-        if (position > landingHeight + 2.0)
+        if (position > landingThreshold + 2.0)
         {
             wasAbove = true;
         }
 
         tickCount++;
 
-        if (position <= landingHeight + 2.0 && wasAbove)
+        if (position <= landingThreshold + 2.0 && wasAbove)
         {
             break;
         }
+    }
+
+    // Compute landing height above ground for next bhop's start height.
+    // rawHeight is the position relative to the crouched ground level.
+    //   >= HALF_SURFACE_EPSILON and <= 2.0: use actual height
+    //   < HALF_SURFACE_EPSILON (including negative/overshoot): SURFACE_EPSILON
+    //   > 2.0 (safety): SURFACE_EPSILON
+    float rawHeight = position - landingThreshold;
+    if (rawHeight < HALF_SURFACE_EPSILON || rawHeight > 2.0)
+    {
+        landingHeightOut = SURFACE_EPSILON;
+    }
+    else
+    {
+        landingHeightOut = rawHeight;
     }
 
     return (tickCount + PREDICTION_EXTRA_AIRTIME) * tickInterval;
