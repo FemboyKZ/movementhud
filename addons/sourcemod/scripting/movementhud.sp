@@ -9,6 +9,7 @@
 #include <gokz>
 #include <gokz/core>
 #include <gokz/hud>
+#include <gokz/jumpstats>
 
 #undef REQUIRE_EXTENSIONS
 #undef REQUIRE_PLUGIN
@@ -83,6 +84,11 @@ public void OnPluginStart()
 	}
 }
 
+public void OnMapStart()
+{
+	OnMapStart_DistPredTiers();
+}
+
 public void OnAllPluginsLoaded()
 {
 	gB_GOKZReplays = LibraryExists("gokz-replays");
@@ -101,6 +107,7 @@ public void OnLibraryRemoved(const char[] name)
 public void OnClientPutInServer(int client)
 {
 	OnClientPutInServer_Movement(client);
+	OnClientPutInServer_DistPred(client);
 	OnClientPutInServer_Preferences(client);
 	OnClientPutInServer_PreferencesMenu(client);
 	OnClientPutInServer_PreferencesChatInput(client);
