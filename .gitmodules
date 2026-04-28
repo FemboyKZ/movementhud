@@ -1,6 +1,7 @@
 [submodule "gokz"]
 	path = gokz
 	url = https://github.com/KZGlobalTeam/gokz
+	branch = dev
 [submodule "movementapi"]
 	path = movementapi
 	url = https://github.com/danzayau/movementapi
