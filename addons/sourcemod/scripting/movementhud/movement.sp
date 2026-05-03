@@ -30,6 +30,7 @@ bool gB_FirstTickGain[MAXPLAYERS + 1];
 
 float gF_JumpStamina[MAXPLAYERS + 1];
 float gF_SimLandingHeight[MAXPLAYERS + 1];
+bool gB_HasSimLanding[MAXPLAYERS + 1];
 
 #define MAX_TRACKED_TICKS 16
 #define PREDICTION_EXTRA_AIRTIME 1
@@ -66,7 +67,8 @@ void OnClientPutInServer_Movement(int client)
     gB_GotBotInfo[client] = false;
     gB_DidEdgeBug[client] = false;
     gF_JumpStamina[client] = 0.0;
-    gF_SimLandingHeight[client] = SURFACE_EPSILON;
+    gF_SimLandingHeight[client] = 0.0;
+    gB_HasSimLanding[client] = false;
 }
 
 void OnPlayerRunCmdPost_Movement(int client, int buttons, const int mouse[2], int tickcount)
@@ -221,6 +223,12 @@ static void ResetTakeoff(int client)
 
 static void DoTakeoff(int client, bool didJump)
 {
+    // Guard against duplicate takeoff dispatch within the same airtime
+    if (gB_DidTakeoff[client])
+    {
+        return;
+    }
+
     bool didPerf = gB_GotBotInfo[client] ? gH_BotInfo[client].HitPerf : GOKZ_GetHitPerf(client);
     float takeoffSpeed = gB_GotBotInfo[client] ? gH_BotInfo[client].Speed : Movement_GetTakeoffSpeed(client);
 
@@ -240,23 +248,59 @@ static void DoTakeoff(int client, bool didJump)
 
     float stamina = gB_GotBotInfo[client] ? 0.0 : gF_JumpStamina[client];
 
-    // For perfect bhops, start from the landing height of the previous jump
-    // instead of SURFACE_EPSILON, since the player lands somewhere in the 0-2u
-    // window above ground and doesn't settle to SURFACE_EPSILON on a perf.
-    float startHeight = SURFACE_EPSILON;
-    if (didPerf && didJump)
+    bool fromLadder = OldMoveType[client] == MOVETYPE_LADDER;
+    bool isLadderJump = fromLadder && (gI_Buttons[client] & IN_JUMP) != IN_JUMP;
+    float takeoffVel[3];
+    if (isLadderJump)
     {
-        startHeight = gF_SimLandingHeight[client];
+        Movement_GetTakeoffVelocity(client, takeoffVel);
+        if (takeoffVel[2] > 0.0)
+        {
+            takeoffVel[2] = 0.0;
+        }
+    }
+
+    float heightOffset = 0.0;
+    if (didJump && !isLadderJump && gB_HasSimLanding[client])
+    {
+        if (gI_GroundTicks[client] == 1)
+        {
+            heightOffset = -gF_SimLandingHeight[client];
+        }
+        else if (gI_GroundTicks[client] > 1)
+        {
+            if (gF_SimLandingHeight[client] > HALF_SURFACE_EPSILON
+                && gF_SimLandingHeight[client] < SURFACE_EPSILON)
+            {
+                heightOffset = -gF_SimLandingHeight[client];
+            }
+            else
+            {
+                heightOffset = -SURFACE_EPSILON;
+            }
+        }
     }
 
     float landingHeight;
-    gF_JumpAirTime[client] = ComputeJumpAirTime(gB_DidCrouchJump[client], stamina, startHeight, landingHeight);
+    if (isLadderJump)
+    {
+        float takeoffOrigin[3];
+        Movement_GetTakeoffOrigin(client, takeoffOrigin);
+        float groundDelta = TraceLadderGroundDelta(client, takeoffOrigin);
+        gF_JumpAirTime[client] = ComputeLadderTakeoffAirTime(takeoffVel[2], groundDelta, landingHeight);
+    }
+    else
+    {
+        gF_JumpAirTime[client] = ComputeJumpAirTime(gB_DidCrouchJump[client], stamina, heightOffset, landingHeight);
+    }
+
     gF_SimLandingHeight[client] = landingHeight;
+    gB_HasSimLanding[client] = didJump && !isLadderJump;
 
     gB_FirstTickGain[client] = gF_CurrentSpeed[client] > gF_OldSpeed[client];
 }
 
-static float ComputeJumpAirTime(bool isCrouchJump, float stamina, float startHeight, float &landingHeightOut)
+static float ComputeJumpAirTime(bool isCrouchJump, float stamina, float heightOffset, float &landingHeightOut)
 {
     // Simulate the full jump trajectory to determine total air time.
     // Matches CS:GO's split-gravity model from the Source SDK:
@@ -292,14 +336,12 @@ static float ComputeJumpAirTime(bool isCrouchJump, float stamina, float startHei
         velocity = (impulse - halfGravity) * staminaMod;
     }
 
-    // startHeight accounts for bhop landing offset: on a perfect bhop, the player
-    // starts from wherever they landed in the 0-2u window above ground, not always
-    // at SURFACE_EPSILON. This affects total air time by up to ~1 tick.
-    float position = startHeight;
+    // Start at SURFACE_EPSILON and encode chained bhop effects via landing threshold offset.
+    float position = SURFACE_EPSILON;
 
     // Players always crouch in air in KZ, so origin is +9u above ground.
     // Landing when crouched origin returns to ground level → must descend 9u extra.
-    float landingThreshold = -9.0;
+    float landingThreshold = -9.0 + heightOffset;
     bool wasAbove = false;
     int tickCount = 0;
 
@@ -327,6 +369,86 @@ static float ComputeJumpAirTime(bool isCrouchJump, float stamina, float startHei
     //   >= HALF_SURFACE_EPSILON and <= 2.0: use actual height
     //   < HALF_SURFACE_EPSILON (including negative/overshoot): SURFACE_EPSILON
     //   > 2.0 (safety): SURFACE_EPSILON
+    float rawHeight = position - landingThreshold;
+    if (rawHeight < HALF_SURFACE_EPSILON || rawHeight > 2.0)
+    {
+        landingHeightOut = SURFACE_EPSILON;
+    }
+    else
+    {
+        landingHeightOut = rawHeight;
+    }
+
+    return (tickCount + PREDICTION_EXTRA_AIRTIME) * tickInterval;
+}
+
+static float TraceLadderGroundDelta(int client, const float takeoffOrigin[3])
+{
+    float mins[3] = { -16.0, -16.0, 0.0 };
+    float maxs[3] = { 16.0, 16.0, 72.0 };
+    float start[3], end[3];
+    start = takeoffOrigin;
+    end = takeoffOrigin;
+    end[2] -= 4096.0;
+
+    TR_TraceHullFilter(start, end, mins, maxs, MASK_PLAYERSOLID,
+        TraceFilterIgnorePlayer, client);
+
+    if (!TR_DidHit() || TR_GetFraction() >= 1.0)
+    {
+        return 0.0;
+    }
+
+    float endpos[3];
+    TR_GetEndPosition(endpos);
+    return endpos[2] - takeoffOrigin[2];
+}
+
+static bool TraceFilterIgnorePlayer(int entity, int contentsMask, any data)
+{
+    return entity != view_as<int>(data) && (entity < 1 || entity > MaxClients);
+}
+
+// Air time prediction for ladder takeoffs
+//
+// Differences from a regular ground jump:
+// - The takeoff vertical velocity comes from the ladder code (or the ladder
+//   jump-button impulse), not sv_jump_impulse, so we feed it in directly.
+// - Stamina does not apply (the player was not on ground).
+// - The landing surface is found via a hull trace (groundDelta), since ladder
+//   geometry varies far more than ground-jump geometry.
+static float ComputeLadderTakeoffAirTime(float takeoffZVel, float groundDelta, float &landingHeightOut)
+{
+    float tickInterval = GetTickInterval();
+    float gravity = FindConVar("sv_gravity").FloatValue;
+    float halfGravity = gravity * 0.5 * tickInterval;
+
+    float velocity = takeoffZVel;
+    float position = SURFACE_EPSILON;
+    float landingThreshold = groundDelta - 9.0;
+
+    bool wasAbove = position > landingThreshold + 2.0;
+    int tickCount = 0;
+
+    while (tickCount < 1000)
+    {
+        velocity -= halfGravity;
+        position += velocity * tickInterval;
+        velocity -= halfGravity;
+
+        if (position > landingThreshold + 2.0)
+        {
+            wasAbove = true;
+        }
+
+        tickCount++;
+
+        if (position <= landingThreshold + 2.0 && wasAbove)
+        {
+            break;
+        }
+    }
+
     float rawHeight = position - landingThreshold;
     if (rawHeight < HALF_SURFACE_EPSILON || rawHeight > 2.0)
     {
