@@ -28,7 +28,6 @@ SM 1.11+
 ## **Differences** - AXE
 
 - JB and PERF indicator colors.
-- EB and Crouched indicators.
 - Pref handling bugfix.
 
 ## **Differences** - FKZ

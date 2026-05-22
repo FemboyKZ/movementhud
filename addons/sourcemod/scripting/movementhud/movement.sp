@@ -14,7 +14,6 @@ float gF_TakeoffSpeed[MAXPLAYERS + 1];
 float gF_OldSpeed[MAXPLAYERS + 1];
 float gF_CurrentSpeed[MAXPLAYERS + 1];
 float gF_LastJumpInput[MAXPLAYERS + 1];
-float gF_OldVerticalVelocity[MAXPLAYERS + 1];
 
 float gF_JumpStartOrigin[MAXPLAYERS + 1][3];
 float gF_JumpStartTime[MAXPLAYERS + 1];
@@ -52,8 +51,6 @@ void OnClientPutInServer_Movement(int client)
     gI_MouseX[client] = 0;
     gI_Buttons[client] = 0;
     gI_GroundTicks[client] = 0;
-    gF_OldVerticalVelocity[client] = 0.0;
-
     gF_CurrentSpeed[client] = 0.0;
     gF_LastJumpInput[client] = 0.0;
 
@@ -125,6 +122,11 @@ public void Movement_OnPlayerJump(int client, bool jumpbug)
     }
 }
 
+public void Movement_OnPlayerEdgebug(int client, float origin[3], float velocity[3])
+{
+    gB_DidEdgeBug[client] = true;
+}
+
 static void TrackMovement(int client, int tickcount)
 {
     if (IsJumping(client))
@@ -167,22 +169,6 @@ static void TrackMovement(int client, int tickcount)
     }
 
     gF_SpeedChange[client][tickcount % MAX_TRACKED_TICKS] = gF_CurrentSpeed[client] - gF_OldSpeed[client];
-
-    // Edge bug detection
-    float velocity[3];
-    Movement_GetVelocity(client, velocity);
-    float currentVerticalVel = velocity[2];
-
-    // Detect edge bug: was falling (< -50), velocity became ~0, not on ground, and not on ladder
-    if (gF_OldVerticalVelocity[client] < -100.0 && 
-        FloatAbs(currentVerticalVel) < 10.0 && 
-        !onGround &&
-        moveType != MOVETYPE_LADDER)
-    {
-        gB_DidEdgeBug[client] = true;
-    }
-
-    gF_OldVerticalVelocity[client] = currentVerticalVel;
 
     OldOnGround[client] = onGround;
     OldMoveType[client] = moveType;
@@ -309,9 +295,9 @@ static float ComputeJumpAirTime(bool isCrouchJump, float stamina, float heightOf
     //   3. FinishGravity: velocity -= half_gravity
     //
     // CJ: CheckJumpButton SETs velocity to impulse (overwrites StartGravity)
-    //     Player crouches in air → origin rises 9u → must descend 9u extra to land
+    //     Player crouches in air -> origin rises 9u -> must descend 9u extra to land
     // Normal: CheckJumpButton ADDs impulse to post-StartGravity velocity
-    //     No crouch offset → lands at takeoff height
+    //     No crouch offset -> lands at takeoff height
     float tickInterval = GetTickInterval();
     float gravity = FindConVar("sv_gravity").FloatValue;
     float halfGravity = gravity * 0.5 * tickInterval;
@@ -340,7 +326,7 @@ static float ComputeJumpAirTime(bool isCrouchJump, float stamina, float heightOf
     float position = SURFACE_EPSILON;
 
     // Players always crouch in air in KZ, so origin is +9u above ground.
-    // Landing when crouched origin returns to ground level → must descend 9u extra.
+    // Landing when crouched origin returns to ground level -> must descend 9u extra.
     float landingThreshold = -9.0 + heightOffset;
     bool wasAbove = false;
     int tickCount = 0;
