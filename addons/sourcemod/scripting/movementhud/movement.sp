@@ -28,6 +28,8 @@ HUDInfo gH_BotInfo[MAXPLAYERS + 1];
 bool gB_GotBotInfo[MAXPLAYERS + 1];
 
 bool gB_FirstTickGain[MAXPLAYERS + 1];
+bool gB_PendingFirstTickGain[MAXPLAYERS + 1];
+int gI_FirstTickGainArmTick[MAXPLAYERS + 1];
 
 float gF_JumpStamina[MAXPLAYERS + 1];
 float gF_SimLandingHeight[MAXPLAYERS + 1];
@@ -147,13 +149,20 @@ static void TrackMovement(int client, int tickcount)
     }
 
     MoveType moveType = GetEntityMoveType(client);
+    bool onGround = gB_GotBotInfo[client] ? gH_BotInfo[client].OnGround : IsOnGround(client);
+
     if (moveType != MOVETYPE_WALK)
     {
         // Can't airstrafe without the right movetype.
         gB_FirstTickGain[client] = false;
+        gB_PendingFirstTickGain[client] = false;
     }
-
-    bool onGround = gB_GotBotInfo[client] ? gH_BotInfo[client].OnGround : IsOnGround(client);
+    else if (gB_PendingFirstTickGain[client] && !onGround
+        && GetGameTickCount() != gI_FirstTickGainArmTick[client])
+    {
+        gB_FirstTickGain[client] = gF_CurrentSpeed[client] > gF_OldSpeed[client];
+        gB_PendingFirstTickGain[client] = false;
+    }
 
     if (onGround)
     {
@@ -213,6 +222,7 @@ static void ResetTakeoff(int client)
     gB_DidEdgeBug[client] = false;
     gB_DidPixelSurf[client] = false;
     gB_FirstTickGain[client] = false;
+    gB_PendingFirstTickGain[client] = false;
 }
 
 static void DoTakeoff(int client, bool didJump)
@@ -291,7 +301,9 @@ static void DoTakeoff(int client, bool didJump)
     gF_SimLandingHeight[client] = landingHeight;
     gB_HasSimLanding[client] = didJump && !isLadderJump;
 
-    gB_FirstTickGain[client] = gF_CurrentSpeed[client] > gF_OldSpeed[client];
+    gB_FirstTickGain[client] = false;
+    gB_PendingFirstTickGain[client] = true;
+    gI_FirstTickGainArmTick[client] = GetGameTickCount();
 }
 
 static float ComputeJumpAirTime(bool isCrouchJump, float stamina, float heightOffset, float &landingHeightOut)
