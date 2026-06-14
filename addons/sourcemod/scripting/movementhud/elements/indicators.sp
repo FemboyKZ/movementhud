@@ -54,8 +54,7 @@ void OnGameFrame_Element_Indicators(int client, int target)
     bool drawFTG = IndicatorsFTGEnabled.GetBool(client) && gB_FirstTickGain[target];
     bool isCrouched = (GetEntityFlags(target) & FL_DUCKING == FL_DUCKING);
     bool isInAir = !(GetEntityFlags(target) & FL_ONGROUND == FL_ONGROUND);
-    bool notHoldingCrouch = !(gI_Buttons[target] & IN_DUCK == IN_DUCK);
-    bool drawCrouch = IndicatorsCrouchEnabled.GetBool(client) && isCrouched && isInAir && notHoldingCrouch;
+    bool drawCrouch = IndicatorsCrouchEnabled.GetBool(client) && isCrouched && isInAir;
 
     // Nothing enabled
     if (!draw || (!drawJB && !drawCJ && !drawPB && !drawEB && !drawPX && !drawFTG && !drawCrouch))
