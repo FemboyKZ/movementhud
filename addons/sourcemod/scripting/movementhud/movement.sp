@@ -191,11 +191,6 @@ static bool IsJumping(int client)
 	return (gI_Buttons[client] & IN_JUMP == IN_JUMP);
 }
 
-static bool IsDucking(int client)
-{
-    return (gI_Buttons[client] & IN_DUCK == IN_DUCK);
-}
-
 static bool IsOnGround(int client)
 {
 	return (GetEntityFlags(client) & FL_ONGROUND == FL_ONGROUND);
@@ -242,7 +237,7 @@ static void DoTakeoff(int client, bool didJump)
 
     if (didJump)
     {
-        gB_DidCrouchJump[client] = IsDucking(client);
+        gB_DidCrouchJump[client] = Movement_GetDucking(client);
     }
 
     float stamina = gB_GotBotInfo[client] ? 0.0 : gF_JumpStamina[client];
