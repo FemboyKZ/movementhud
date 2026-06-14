@@ -7,6 +7,8 @@ bool gB_DidPerf[MAXPLAYERS + 1];
 bool gB_DidJumpBug[MAXPLAYERS + 1];
 bool gB_DidCrouchJump[MAXPLAYERS + 1];
 bool gB_DidEdgeBug[MAXPLAYERS + 1];
+bool gB_DidPixelSurf[MAXPLAYERS + 1];
+float gF_LastEdgeBugTime[MAXPLAYERS + 1];
 
 bool gB_DidTakeoff[MAXPLAYERS + 1];
 float gF_TakeoffSpeed[MAXPLAYERS + 1];
@@ -63,6 +65,8 @@ void OnClientPutInServer_Movement(int client)
 
     gB_GotBotInfo[client] = false;
     gB_DidEdgeBug[client] = false;
+    gB_DidPixelSurf[client] = false;
+    gF_LastEdgeBugTime[client] = 0.0;
     gF_JumpStamina[client] = 0.0;
     gF_SimLandingHeight[client] = 0.0;
     gB_HasSimLanding[client] = false;
@@ -125,6 +129,14 @@ public void Movement_OnPlayerJump(int client, bool jumpbug)
 public void Movement_OnPlayerEdgebug(int client, float origin[3], float velocity[3])
 {
     gB_DidEdgeBug[client] = true;
+    gF_LastEdgeBugTime[client] = GetEngineTime();
+}
+
+public void Movement_OnPlayerPixelsurf(int client, float origin[3], float velocity[3])
+{
+    gB_DidEdgeBug[client] = false;
+    gF_LastEdgeBugTime[client] = 0.0;
+    gB_DidPixelSurf[client] = true;
 }
 
 static void TrackMovement(int client, int tickcount)
@@ -204,6 +216,7 @@ static void ResetTakeoff(int client)
     gB_DidJumpBug[client] = false;
     gB_DidCrouchJump[client] = false;
     gB_DidEdgeBug[client] = false;
+    gB_DidPixelSurf[client] = false;
     gB_FirstTickGain[client] = false;
 }
 
