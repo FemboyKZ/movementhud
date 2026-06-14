@@ -4,7 +4,7 @@
 	branch = dev
 [submodule "movementapi"]
 	path = movementapi
-	url = https://github.com/danzayau/movementapi
+	url = https://github.com/FemboyKZ/movementapi
 [submodule "sm-json"]
 	path = sm-json
 	url = https://github.com/clugg/sm-json
