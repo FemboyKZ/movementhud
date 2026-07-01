@@ -1,12 +1,14 @@
 # MovementHUD
 
+![Downloads](https://img.shields.io/github/downloads/FemboyKZ/movementhud/total?style=flat-square) ![Last commit](https://img.shields.io/github/last-commit/FemboyKZ/movementhud?style=flat-square) ![Open issues](https://img.shields.io/github/issues/FemboyKZ/movementhud?style=flat-square) ![Closed issues](https://img.shields.io/github/issues-closed/FemboyKZ/movementhud?style=flat-square) ![Size](https://img.shields.io/github/repo-size/FemboyKZ/movementhud?style=flat-square) ![GitHub Workflow Status](https://img.shields.io/github/actions/workflow/status/FemboyKZ/movementhud/build.yml?style=flat-square)
+
 A versatile SourceMod plugin providing customizable displays for player movement.
 
 FKZ fork of LoB fork. Some changes taken from [AXE fork](https://github.com/cinyan10/movementhud).
 
 ## **Installation**
 
-Requires [MovementAPI](https://github.com/FemboyKZ/movementapi) and [GOKZ](https://github.com/KZGlobalTeam/gokz).
+Requires [movementhud](https://github.com/FemboyKZ/movementhud) and [GOKZ](https://github.com/KZGlobalTeam/gokz).
 SM 1.12+
 
 1. Download the [latest release](https://github.com/FemboyKZ/movementhud/releases)
