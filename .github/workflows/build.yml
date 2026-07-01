@@ -1,0 +1,68 @@
+name: build
+
+on:
+  push:
+    branches:
+      - "**"
+    tags:
+      - "**"
+  pull_request:
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          submodules: true
+
+      - name: Setup variables
+        id: vars
+        run: |
+          echo "is_tag=${{ startsWith(github.ref, 'refs/tags/') }}" >> $GITHUB_OUTPUT
+          if [[ "${{ startsWith(github.ref, 'refs/tags/') }}" == "true" ]]; then
+            echo "version=${GITHUB_REF#refs/*/}" >> $GITHUB_OUTPUT
+          else
+            echo "version=git-${{ github.sha }}" >> $GITHUB_OUTPUT
+          fi
+
+      - name: Setup SourcePawn Compiler
+        id: setup
+        uses: rumblefrog/setup-sp@master
+        with:
+          version: "1.12.x"
+
+      - name: Create plugins directory
+        run: mkdir addons/sourcemod/plugins
+
+      - name: Compile plugins
+        run: |
+          cd addons/sourcemod/scripting
+          if [[ "${{ steps.vars.outputs.is_tag }}" != "true" ]]; then
+            sed -i -E 's/^(#define\sMHUD_VERSION\s)"(.*)"$/\1"${{ steps.vars.outputs.version }}"/' include/movementhud.inc
+          fi
+          for file in *.sp; do spcomp $file -i "include" -o "../plugins/${file%.*}.smx"; done;
+
+      - name: Prepare artifact
+        run: |
+          mkdir artifact
+          cp -r addons artifact
+
+      - name: Upload compiled plugin
+        uses: actions/upload-artifact@v7
+        with:
+          name: movementhud-${{ steps.vars.outputs.version }}.zip
+          path: artifact
+
+      - name: Compress plugins
+        if: steps.vars.outputs.is_tag == 'true'
+        run: |
+          mkdir build
+          zip -r "build/movementhud-${{ steps.vars.outputs.version }}.zip" addons
+
+      - name: Release
+        if: steps.vars.outputs.is_tag == 'true'
+        uses: softprops/action-gh-release@v3
+        with:
+          files: "build/movementhud-${{ steps.vars.outputs.version }}.zip"
