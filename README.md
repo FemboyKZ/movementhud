@@ -6,8 +6,8 @@ FKZ fork of LoB fork. Some changes taken from [AXE fork](https://github.com/ciny
 
 ## **Installation**
 
-Requires [MovementAPI](https://github.com/danzayau/movementapi) and [GOKZ](https://github.com/KZGlobalTeam/gokz).
-SM 1.11+
+Requires [MovementAPI](https://github.com/FemboyKZ/movementapi) and [GOKZ](https://github.com/KZGlobalTeam/gokz).
+SM 1.12+
 
 1. Download the [latest release](https://github.com/FemboyKZ/movementhud/releases)
 2. Extract all the files into `csgo`
@@ -32,4 +32,6 @@ SM 1.11+
 
 ## **Differences** - FKZ
 
-- Distance prediction for LJs based on [7yPh00N's plugin](https://github.com/7yPh00N/Distance_Prediction_Plugin)
+- Distance prediction for jumpstats based on [7yPh00N's plugin](https://github.com/7yPh00N/Distance_Prediction_Plugin)
+- Pixelsurf indicators
+- Lots of fixes
