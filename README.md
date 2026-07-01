@@ -8,7 +8,7 @@ FKZ fork of LoB fork. Some changes taken from [AXE fork](https://github.com/ciny
 
 ## **Installation**
 
-Requires [movementhud](https://github.com/FemboyKZ/movementhud) and [GOKZ](https://github.com/KZGlobalTeam/gokz).
+Requires [MovementAPI](https://github.com/FemboyKZ/movementapi) and [GOKZ](https://github.com/KZGlobalTeam/gokz).
 SM 1.12+
 
 1. Download the [latest release](https://github.com/FemboyKZ/movementhud/releases)
