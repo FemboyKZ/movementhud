@@ -122,10 +122,19 @@ public void Movement_OnPlayerJump(int client, bool jumpbug)
 {
     gB_DidJump[client] = true;
     gB_DidJumpBug[client] = Movement_GetJumpbugged(client);
-    if (jumpbug)
+}
+
+public void Movement_OnStopTouchGround(int client, bool jumped, bool ladderJump, bool jumpbug)
+{
+    if (!jumpbug)
     {
-        DoTakeoff(client, true);
+        return;
     }
+
+    ResetTakeoff(client);
+    gB_DidJump[client] = true;
+    gB_DidJumpBug[client] = true;
+    DoTakeoff(client, true);
 }
 
 public void Movement_OnPlayerEdgebug(int client, float origin[3], float velocity[3])
@@ -164,10 +173,21 @@ static void TrackMovement(int client, int tickcount)
         gB_PendingFirstTickGain[client] = false;
     }
 
-    if (onGround)
+    // Grabbing a ladder is a landing, so jump state resets like it does on ground.
+    bool onLadder = moveType == MOVETYPE_LADDER;
+
+    if (onGround || onLadder)
     {
         ResetTakeoff(client);
-        gI_GroundTicks[client]++;
+        if (onGround)
+        {
+            gI_GroundTicks[client]++;
+        }
+        else
+        {
+            // A ladder is not ground, so it must not feed the bhop height offset.
+            gI_GroundTicks[client] = 0;
+        }
     }
     else
     {
