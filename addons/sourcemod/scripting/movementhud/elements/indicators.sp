@@ -1,6 +1,7 @@
 Handle g_IndicatorsHudSync;
 
 #define INDICATORS_EB_DECAY 0.5
+#define INDICATORS_TB_DECAY 0.5
 
 MHudBoolPreference IndicatorsMode;
 MHudRGBPreference IndicatorsColor;
@@ -13,6 +14,7 @@ MHudBoolPreference IndicatorsCJEnabled;
 MHudBoolPreference IndicatorsPBEnabled;
 MHudBoolPreference IndicatorsEBEnabled;
 MHudBoolPreference IndicatorsPXEnabled;
+MHudBoolPreference IndicatorsTBEnabled;
 
 MHudBoolPreference IndicatorsAbbreviations;
 
@@ -34,6 +36,7 @@ void OnPluginStart_Elements_Other_Indicators()
     IndicatorsPBEnabled = new MHudBoolPreference("indicators_pb_enabled", "Indicators - Perfect Bhop", false);
     IndicatorsEBEnabled = new MHudBoolPreference("indicators_eb_enabled", "Indicators - Edge Bug", false);
     IndicatorsPXEnabled = new MHudBoolPreference("indicators_px_enabled", "Indicators - Pixel Surf", false);
+    IndicatorsTBEnabled = new MHudBoolPreference("indicators_tb_enabled", "Indicators - Texture Bug", false);
     IndicatorsFTGEnabled = new MHudBoolPreference("indicators_ftg", "Indicators - First Tick Gain", false);
     IndicatorsCrouchEnabled = new MHudBoolPreference("indicators_crouch", "Indicators - Crouch Status", false);
     IndicatorsAbbreviations = new MHudBoolPreference("indicators_abbrs", "Indicators - Abbreviations", true);
@@ -51,13 +54,15 @@ void OnGameFrame_Element_Indicators(int client, int target)
     bool ebActive = gB_DidEdgeBug[target] || (GetEngineTime() - gF_LastEdgeBugTime[target] <= INDICATORS_EB_DECAY);
     bool drawEB = IndicatorsEBEnabled.GetBool(client) && ebActive;
     bool drawPX = IndicatorsPXEnabled.GetBool(client) && gB_DidPixelSurf[target];
+    bool tbActive = gB_DidTextureBug[target] || (GetEngineTime() - gF_LastTextureBugTime[target] <= INDICATORS_TB_DECAY);
+    bool drawTB = IndicatorsTBEnabled.GetBool(client) && tbActive;
     bool drawFTG = IndicatorsFTGEnabled.GetBool(client) && gB_FirstTickGain[target];
     bool isCrouched = (GetEntityFlags(target) & FL_DUCKING == FL_DUCKING);
     bool isInAir = !(GetEntityFlags(target) & FL_ONGROUND == FL_ONGROUND);
     bool drawCrouch = IndicatorsCrouchEnabled.GetBool(client) && isCrouched && isInAir;
 
     // Nothing enabled
-    if (!draw || (!drawJB && !drawCJ && !drawPB && !drawEB && !drawPX && !drawFTG && !drawCrouch))
+    if (!draw || (!drawJB && !drawCJ && !drawPB && !drawEB && !drawPX && !drawTB && !drawFTG && !drawCrouch))
     {
         return;
     }
@@ -122,6 +127,14 @@ void OnGameFrame_Element_Indicators(int client, int target)
         Format(buffer, sizeof(buffer), "%s%s\n",
             buffer,
             useAbbr ? "PX" : "PIXEL SURF"
+        );
+    }
+
+    if (drawTB)
+    {
+        Format(buffer, sizeof(buffer), "%s%s\n",
+            buffer,
+            useAbbr ? "TB" : "TEXTURE BUG"
         );
     }
 
