@@ -1,1 +1,0 @@
-../../../../sourcemod/plugins/include/sdktools_tempents.inc

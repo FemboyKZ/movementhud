@@ -1,1 +1,0 @@
-../../../../sourcemod/plugins/include/adt_stack.inc

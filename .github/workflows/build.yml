@@ -38,11 +38,11 @@ jobs:
 
       - name: Compile plugins
         run: |
-          cd addons/sourcemod/scripting
           if [[ "${{ steps.vars.outputs.is_tag }}" != "true" ]]; then
-            sed -i -E 's/^(#define\sMHUD_VERSION\s)"(.*)"$/\1"${{ steps.vars.outputs.version }}"/' include/movementhud.inc
+            sed -i -E 's/^(#define\sMHUD_VERSION\s)"(.*)"$/\1"${{ steps.vars.outputs.version }}"/' addons/sourcemod/scripting/include/movementhud.inc
           fi
-          for file in *.sp; do spcomp $file -i "include" -o "../plugins/${file%.*}.smx"; done;
+          make SPCOMP=spcomp
+          mv addons/sourcemod/scripting/movementhud.smx addons/sourcemod/plugins/
 
       - name: Prepare artifact
         run: |

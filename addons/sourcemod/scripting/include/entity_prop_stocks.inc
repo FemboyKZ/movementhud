@@ -1,1 +1,0 @@
-../../../../sourcemod/plugins/include/entity_prop_stocks.inc
