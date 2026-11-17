@@ -25,7 +25,6 @@ void OnPluginStart_PreferencesCode()
     PreferencesInCode.Push(SpeedColorBySpeed);
     PreferencesInCode.Push(KeysColorBySpeed);
     PreferencesInCode.Push(IndicatorsColor);
-    PreferencesInCode.Push(IndicatorsJBColor);
     PreferencesInCode.Push(IndicatorsPosition);
     PreferencesInCode.Push(IndicatorsJBEnabled);
     PreferencesInCode.Push(IndicatorsCJEnabled);
@@ -42,6 +41,9 @@ void OnPluginStart_PreferencesCode()
     PreferencesInCode.Push(KeysLossColor);
 
     PreferencesInCode.Push(IndicatorsMode);
+
+    // dots revision
+    PreferencesInCode.Push(IndicatorsJBColor);
     PreferencesInCode.Push(DisableInFreeCamera);
     PreferencesInCode.Push(SpeedJBColor);
     PreferencesInCode.Push(IndicatorsPBColor);
